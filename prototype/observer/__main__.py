@@ -45,7 +45,6 @@ class Settings(object):
             "--count",
             help="Display this many in the report",
         )
-        parser.add_argument("--count", default="10", help="Report this many top hits")
         args = parser.parse_args()
         config = configparser.ConfigParser()
         config["DEFAULT"] = {
@@ -55,7 +54,7 @@ class Settings(object):
         config.read(args.config)
         cls.source = args.source or config["DEFAULT"].get("source", "-")
         cls.log = logging._nameToLevel.get(
-            args.logging.upper() or config["DEFAULT"].get("log", "WARN").upper()
+            (args.logging or config["DEFAULT"].get("log", "WARN")).upper()
         )
         cls.pattern = args.pattern or config["DEFAULT"].get("pattern", "(.*) ")
         cls.count = args.count or config["DEFAULT"].get("count", "10")

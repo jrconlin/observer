@@ -25,22 +25,30 @@ where
         self.map.len()
     }
 
-    /// Add or update a key in the counter map. This will also update the creation time
-    /// so that key remains "fresh"
-    pub fn add(&mut self, key: K) {
+    /// Add or update a key in the counter map. Returns the current
+    /// count of the key.
+    pub fn add(&mut self, key: K) -> i64 {
         let count = self.map.get(&key).unwrap_or(&0) + 1;
         self.map.insert(key, count);
+        count
     }
 
     /// Decrease the count of a key by one. This preseves the creation time so that
-    /// old values can decay out of the map.
-    pub fn decrease(&mut self, key: K) {
+    /// old values can decay out of the map. Remove any key that goes below 1.
+    /// Returns the count of the key if it still exists.
+    pub fn decrease(&mut self, key: K) -> Option<i64> {
         let mut count = self.map.get(&key).unwrap_or(&0).to_owned();
         count -= 1;
-        self.map.insert(key, count);
+        if count < 1 {
+            self.map.remove(&key);
+            None
+        } else {
+            self.map.insert(key, count);
+            Some(count)
+        }
     }
 
-    /// Get the count of a given key.
+    /// Get the count of a given key if it exists.
     pub fn get(&self, key: &K) -> Option<&i64> {
         self.map.get(key)
     }
@@ -66,12 +74,7 @@ where
 
     /// Return the `k` most common keys in the map, sorted by occurrence.
     pub fn k_most_common_ordered(&self, k: usize) -> Vec<(&K, i64)> {
-        let mut vec = self.map.iter().collect::<Vec<(&K, &i64)>>();
-        vec.sort_by(|a, b| (b.1).cmp(a.1));
-        vec.truncate(k);
-        vec.iter()
-            .map(|(k, v)| (k.to_owned(), *v.to_owned()))
-            .collect::<Vec<(&K, i64)>>()
+        self.most_common_ordered().into_iter().take(k).collect()
     }
 }
 

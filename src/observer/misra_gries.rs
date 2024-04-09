@@ -138,12 +138,8 @@ impl MisraGries {
         } else {
             for key in keys {
                 let kk = key.to_string();
+                // This will automatically prune any keys that have no count.
                 self.counter.decrease(kk.clone());
-                if let Some(cnt) = self.counter.get(&kk) {
-                    if *cnt < 1 {
-                        self.counter.remove(&kk);
-                    }
-                }
             }
             false
         }

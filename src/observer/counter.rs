@@ -50,6 +50,7 @@ where
         }
     }
 
+    #[allow(dead_code)]
     /// Get the count of a given key if it exists.
     pub fn get(&self, key: &K) -> Option<&i64> {
         self.map.get(key)

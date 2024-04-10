@@ -1,15 +1,17 @@
 //! Main application server
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 
 use actix_cors::Cors;
 use actix_web::{dev, http::StatusCode, middleware::ErrorHandlers, web, App, HttpServer};
 use cadence::StatsdClient;
 
+use crate::observer::misra_gries::MisraGries;
 use crate::server::dockerflow::configure;
 use crate::web::middleware::sentry::SentryWrapper;
 use crate::{error::HandlerError, metrics, settings::Settings};
 
 mod dockerflow;
+mod handler;
 
 /// This is the global HTTP state object that will be made available to all
 /// HTTP API calls.
@@ -17,6 +19,10 @@ mod dockerflow;
 pub struct ServerState {
     /// Metric reporting
     pub metrics: Arc<StatsdClient>,
+    /// Misra-Gries counter
+    pub counter: Arc<Mutex<MisraGries>>,
+    /// How many items to report back.
+    pub report_size: usize,
     pub port: u16,
 }
 
@@ -43,6 +49,11 @@ macro_rules! build_app {
             // for finer grained specification.
             .wrap(Cors::permissive())
             .service(web::scope("").configure(configure))
+            .service(
+                web::resource("/track")
+                    .route(web::put().to(handler::track))
+                    .route(web::get().to(handler::report)),
+            )
     };
 }
 
@@ -50,7 +61,9 @@ impl Server {
     pub async fn with_settings(settings: Settings) -> Result<dev::Server, HandlerError> {
         let state = ServerState {
             metrics: Arc::new(metrics::metrics_from_opts(&settings)?),
+            counter: Arc::new(Mutex::new(MisraGries::new(settings.counter_limit as usize))),
             port: settings.port,
+            report_size: settings.report_size as usize,
         };
         let mut server = HttpServer::new(move || build_app!(state.clone()));
         if let Some(keep_alive) = settings.actix_keep_alive {

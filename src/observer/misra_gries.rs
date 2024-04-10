@@ -82,7 +82,7 @@ impl Error for MGError {
 /// approximation and not a strict definition. (If you wish to have
 /// a more accurate count, set the limit higher.)
 #[derive(Clone, Debug)]
-struct MisraGries {
+pub struct MisraGries {
     /// The collection of items we're tracking
     counter: Counter<String>,
     /// The limit of the size of the collection of items we're tracking.

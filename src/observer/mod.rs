@@ -1,2 +1,2 @@
 mod counter;
-mod misra_gries;
+pub mod misra_gries;

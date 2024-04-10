@@ -24,6 +24,10 @@ pub struct Settings {
     pub statsd_host: Option<String>,
     pub statsd_port: u16,
     pub actix_keep_alive: Option<u64>,
+    /// Max number of items to track. (defaults to 30,000)
+    pub counter_limit: u64,
+    /// Max number of items to report back (defaults to 100)
+    pub report_size: u64,
 }
 
 impl Default for Settings {
@@ -37,6 +41,8 @@ impl Default for Settings {
             statsd_host: None,
             statsd_port: 8125,
             actix_keep_alive: None,
+            counter_limit: 32_000,
+            report_size: 100,
         }
     }
 }

@@ -5,6 +5,7 @@ use actix_web::{
     HttpResponse, HttpResponseBuilder, Result,
 };
 use backtrace::Backtrace;
+use serde_json::json;
 use thiserror::Error;
 
 // pub type Result<T> = result::Result<T, HandlerError>;
@@ -19,6 +20,8 @@ pub struct HandlerError {
 
 #[derive(Clone, Eq, PartialEq, Debug, Error)]
 pub enum HandlerErrorKind {
+    #[error("Bad request: {:?}", _0)]
+    BadRequest(String),
     #[error("General error: {:?}", _0)]
     General(String),
     #[error("Internal error: {:?}", _0)]
@@ -33,6 +36,7 @@ impl HandlerErrorKind {
             HandlerErrorKind::Internal(_) | HandlerErrorKind::General(_) => {
                 StatusCode::INTERNAL_SERVER_ERROR
             } // _ => StatusCode::UNAUTHORIZED,
+            HandlerErrorKind::BadRequest(_) => StatusCode::BAD_REQUEST,
         }
     }
 
@@ -41,6 +45,7 @@ impl HandlerErrorKind {
         match self {
             HandlerErrorKind::Internal(_) => 510,
             HandlerErrorKind::General(_) => 500,
+            HandlerErrorKind::BadRequest(_) => 400,
         }
     }
 
@@ -129,7 +134,7 @@ impl ResponseError for HandlerError {
         //
         // So instead we translate our error to a backwards compatible one
         let mut resp = HttpResponse::build(self.status_code());
-        resp.json(self.kind().errno())
+        resp.json(json!({"status": self.kind().errno(), "error": self.kind().to_string()}))
     }
 
     fn status_code(&self) -> StatusCode {

@@ -16,7 +16,7 @@ edition = "2021"
 # e.g.
 # some-lib = "0.1"  # 0.02+ requires foo crate 0.3+
 actix-http = "3.3"
-actix-web = "4.2"
+actix-web = "4.5"
 actix-rt = "2.8"
 actix-cors = "0.7"
 backtrace = "0.3"
@@ -42,7 +42,7 @@ sentry = { version = "0.32", features = [
 sentry-actix = "0.32"
 serde_json = "1.0"
 slog = { version = "2.7", features = [
-    "max_level_info",
+    "max_level_debug",
     "release_max_level_info",
     "dynamic-keys",
 ] }

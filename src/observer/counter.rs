@@ -1,4 +1,5 @@
 use std::collections::btree_map::BTreeMap;
+use std::fmt::Debug;
 
 /// A counter that keeps track of the number of times a key has been seen.
 /// Note, there is a `counter` crate, however it does not appear to perform
@@ -12,7 +13,7 @@ pub(crate) struct Counter<K> {
 
 impl<K> Counter<K>
 where
-    K: Ord + Clone,
+    K: Ord + Clone + Debug,
 {
     pub fn new() -> Self {
         Self {
@@ -28,6 +29,7 @@ where
     /// Add or update a key in the counter map. Returns the current
     /// count of the key.
     pub fn add(&mut self, key: K) -> i64 {
+        debug!("🧮 Adding {:?}", key);
         let count = self.map.get(&key).unwrap_or(&0) + 1;
         self.map.insert(key, count);
         count
@@ -55,6 +57,7 @@ where
 
     /// Remove a given key from the map.
     pub fn remove(&mut self, key: &K) {
+        debug!("🧮 Dropping {:?}", key);
         self.map.remove(key);
     }
 

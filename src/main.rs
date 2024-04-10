@@ -30,7 +30,9 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let args: Args = Docopt::new(USAGE)
         .and_then(|d| d.deserialize())
         .unwrap_or_else(|e| e.exit());
-    let settings = settings::Settings::with_env_and_config_file(&args.flag_config)?;
+    let settings = settings::Settings::with_env_and_config_file(
+        &args.flag_config.or(Some("config.ini".to_owned())),
+    )?;
     init_logging(!settings.human_logs).expect("Logging failed to init");
     debug!("Starting up...");
     // Set SENTRY_DSN env var to enable Sentry.actix_cors
@@ -48,8 +50,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
         release: sentry::release_name!(),
         ..sentry::ClientOptions::default()
     });
-
-    debug!("Starting up...");
 
     let banner = settings.banner();
     let server = server::Server::with_settings(settings).await.unwrap();

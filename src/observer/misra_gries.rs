@@ -109,6 +109,7 @@ impl MisraGries {
 
     /// Remove `count` least frequently seen items. (removes `count` items, not items seen less than `count` times)
     pub fn purge(mut self, count: usize) {
+        debug!("🧮 Purging {} items", count);
         let total = self.counter.len();
         let purge_amount = if count > total { total } else { count };
         let all = self

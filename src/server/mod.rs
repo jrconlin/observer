@@ -48,12 +48,13 @@ macro_rules! build_app {
             // For now, let's be permissive and use NGINX (the wrapping server)
             // for finer grained specification.
             .wrap(Cors::permissive())
-            .service(web::scope("").configure(configure))
             .service(
                 web::resource("/track")
                     .route(web::put().to(handler::track))
                     .route(web::get().to(handler::report)),
             )
+            // the following definition should come last.
+            .service(web::scope("").configure(configure))
     };
 }
 
@@ -65,7 +66,7 @@ impl Server {
             port: settings.port,
             report_size: settings.report_size as usize,
         };
-        let mut server = HttpServer::new(move || build_app!(state.clone()));
+        let mut server = HttpServer::new(move || build_app!(web::Data::new(state.clone())));
         if let Some(keep_alive) = settings.actix_keep_alive {
             server = server.keep_alive(std::time::Duration::from_secs(keep_alive));
         }

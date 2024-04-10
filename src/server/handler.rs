@@ -42,7 +42,10 @@ pub async fn track(state: Data<ServerState>, payload: TrackData) -> HttpResponse
         .map_err(|e| HandlerError::internal(&e.to_string()))
     {
         Ok(v) => v,
-        Err(e) => return HttpResponse::InternalServerError().json(json!({"error": e.to_string()})),
+        Err(e) => {
+            error!("HandlerError: {:?}", &e);
+            return HttpResponse::InternalServerError().json(json!({"error": e.to_string()}));
+        }
     };
     let frequent = counter.track(&payload.trackable);
 
@@ -56,8 +59,8 @@ pub async fn track(state: Data<ServerState>, payload: TrackData) -> HttpResponse
 pub async fn report(state: Data<ServerState>) -> HttpResponse {
     let counter = state.counter.lock().unwrap();
     let report_size = state.report_size;
-    let report = counter.clone().top(report_size as usize);
-
+    let report = counter.clone().top(report_size);
+    debug!("Generating report");
     HttpResponse::Ok().json(json!({
         "report": report,
     }))
